@@ -1550,7 +1550,13 @@ export class StreamServer extends EventEmitter {
       return;
     }
 
-    const videoFps = this.videoMetadata?.videoFPS ?? 15;
+    // `videoFPS` is 0 on cameras that don't advertise a rate (e.g. Indoor Cam
+    // C220). `?? 15` lets that 0 through to JMuxer, which then substitutes its
+    // own default of 30 and stamps every sample 33ms apart while the camera
+    // really delivers one every ~67ms (14.8fps measured) — the muxed timeline
+    // runs ~2x faster than wall clock, on both tracks. `|| 15` uses the
+    // intended fallback instead.
+    const videoFps = this.videoMetadata?.videoFPS || 15;
 
     // Pick the muxer mode by whether this camera actually delivers audio.
     // JMuxer `both` will not emit a single fMP4 byte until BOTH the video

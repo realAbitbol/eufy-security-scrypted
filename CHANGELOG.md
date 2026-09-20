@@ -22,6 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   after ~11-30s. Priming makes the muxer ready on the first live frame, so the
   audio-aware fallback now only fires when audio samples genuinely never
   arrive.
+- **Muxed timeline ran ~2x faster than the camera**: `videoFPS: 0` (reported by
+  cameras that don't advertise a rate, e.g. Indoor Cam C220) reached JMuxer,
+  which substitutes its own default of 30fps and stamps every sample 33ms apart
+  while the camera delivers one every ~67ms (14.8fps measured). The intended
+  15fps fallback is now actually applied.
 
 ## [0.4.0] - 2026-07-20
 

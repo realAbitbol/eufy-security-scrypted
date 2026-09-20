@@ -2493,6 +2493,42 @@ describe("StreamServer", () => {
 
       socket.destroy();
     });
+
+    it("uses the fallback fps when the camera reports 0 (JMuxer would use 30)", async () => {
+      const socket = await attachMuxer();
+
+      fireVideo(
+        Buffer.concat([START, SPS_NAL, START, PPS_NAL, START, IDR_NAL]),
+        "H264",
+        0,
+      );
+      await wait(50);
+
+      const JMuxerMock = require("jmuxer").default;
+      const options =
+        JMuxerMock.mock.calls[JMuxerMock.mock.calls.length - 1][0];
+      expect(options.fps).toBe(15);
+
+      socket.destroy();
+    });
+
+    it("keeps a reported fps when the camera advertises one", async () => {
+      const socket = await attachMuxer();
+
+      fireVideo(
+        Buffer.concat([START, SPS_NAL, START, PPS_NAL, START, IDR_NAL]),
+        "H264",
+        24,
+      );
+      await wait(50);
+
+      const JMuxerMock = require("jmuxer").default;
+      const options =
+        JMuxerMock.mock.calls[JMuxerMock.mock.calls.length - 1][0];
+      expect(options.fps).toBe(24);
+
+      socket.destroy();
+    });
   });
 
   describe("parameter-set caching (individual NAL units, not whole events)", () => {
